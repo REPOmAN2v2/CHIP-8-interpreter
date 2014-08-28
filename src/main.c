@@ -21,11 +21,10 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	initialiseSDL();	
-	initialiseChip();
-
 	// Copy the program into the memory
 	loadGame(argv[1]);
+
+	initialiseSDL();
 
 	float t = 0.0f;
 	float dt = 0.1f;

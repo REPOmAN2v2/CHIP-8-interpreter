@@ -30,7 +30,7 @@ typedef struct _chip8 {
 	// one byte
 	ul8 memory[MEM];
 	ul8 V[REG];
-	ul8 screen[WIDTH * HEIGHT];
+	ul8 screen[WIDTH*HEIGHT];
 	ul8 delayTimer; // both timers count at 60Hz down to zero
 	ul8 soundTimer;
 	ul8 kb[KEYS]; // keyboard
@@ -97,6 +97,8 @@ void initialiseChip()
 
 void loadGame(const char *game)
 {
+	initialiseChip();
+
 	fprintf(stdout, "%s\n", game);
 	FILE *file = NULL;
 	file = fopen(game, "rb");
@@ -109,7 +111,7 @@ void loadGame(const char *game)
 		// fseek(file, 0, SEEK_SET);
 		rewind(file);
 
-		if ((MEM - 512) > fileLen) {
+		if ((MEM - 512) < fileLen) {
 			printError("The program is too big: %u bytes", fileLen);
 		}
 
@@ -151,6 +153,7 @@ void cycle()
 	 */
 
 	chip8->opcode = chip8->memory[chip8->pc] << 8 | chip8->memory[chip8->pc + 1];
+	fprintf(stdout, "Executing opcode 0x%X\n", chip8->opcode);
 
 	// Decode the opcode according to the opcode table
 
@@ -367,7 +370,7 @@ void cycle()
 					}
 				break;
 
-				case 0x00A1: // 0xEXA1: skip the next instruction if the key in VX ins't pressed
+				case 0x0001: // 0xEXA1: skip the next instruction if the key in VX ins't pressed
 					if (chip8->kb[chip8->V[(chip8->opcode & 0x0F00) >> 8]] == 0) {
 						chip8->pc += 4;
 					} else {
@@ -494,7 +497,7 @@ int getDrawFlag()
 
 int getPixel(int x, int y)
 {
-	return (chip8->screen[(y*64) + x]);
+	return (chip8->screen[(y*WIDTH) + x]);
 }
 
 unsigned char * getKeyboard()

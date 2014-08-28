@@ -4,7 +4,6 @@
 #define WIDTH 64
 #define HEIGHT 32
 
-void initialiseChip();
 void loadGame(const char *game);
 void cycle();
 int getDrawFlag();

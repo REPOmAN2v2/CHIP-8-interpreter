@@ -4,6 +4,9 @@
 #include "sdl.h"
 #include "chip8.h"
 
+#define SWIDTH (WIDTH * 10)
+#define SHEIGHT (HEIGHT * 10) 
+
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
@@ -21,8 +24,8 @@ void initialiseSDL()
 
 	window = SDL_CreateWindow("CHIP-8", SDL_WINDOWPOS_UNDEFINED,
 										SDL_WINDOWPOS_UNDEFINED,
-										64,
-										32,
+										SWIDTH,
+										SHEIGHT,
 										SDL_WINDOW_SHOWN);
 
 	if (window == NULL) {
@@ -46,11 +49,16 @@ void drawGraphics()
 	for (int y = 0; y < HEIGHT; ++y) {
 		for (int x = 0; x < WIDTH; ++x) {
 			if (getPixel(x, y)) {
+				fprintf(stdout, "Drawing pixel (%d, %d)\n", x, y);
 				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-				SDL_RenderDrawPoint(renderer, x, y);
+				//SDL_RenderDrawPoint(renderer, x, y);
+				SDL_Rect pixel = {x * 10, y * 10, 10, 10};
+				SDL_RenderFillRect(renderer, &pixel);
 			}
 		}
 	}
+
+	SDL_RenderPresent(renderer);
 }
 
 void setKeys(int key)
