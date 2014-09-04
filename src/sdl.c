@@ -32,7 +32,7 @@ void initialiseSDL()
 		printError("Failed to create the window: (%s)\n", SDL_GetError());
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED); //| SDL_RENDERER_PRESENTVSYNC
 
 	if (renderer == NULL) {
 		printError("Failed to initialise renderer: (%s)\n", SDL_GetError());
@@ -45,12 +45,12 @@ void drawGraphics()
 {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
 	for (int y = 0; y < HEIGHT; ++y) {
 		for (int x = 0; x < WIDTH; ++x) {
 			if (getPixel(x, y)) {
-				fprintf(stdout, "Drawing pixel (%d, %d)\n", x, y);
-				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+				//fprintf(stdout, "Drawing pixel (%d, %d)\n", x, y);
 				//SDL_RenderDrawPoint(renderer, x, y);
 				SDL_Rect pixel = {x * 10, y * 10, 10, 10};
 				SDL_RenderFillRect(renderer, &pixel);
@@ -61,29 +61,82 @@ void drawGraphics()
 	SDL_RenderPresent(renderer);
 }
 
-void setKeys(int key)
+// so ugly
+void setKeys(int key, bool flag)
 {
 	unsigned char *keyboard = getKeyboard();
 
-	if(key == SDLK_1)		keyboard[0x1] = 1;
-	else if(key == SDLK_2)	keyboard[0x2] = 1;
-	else if(key == SDLK_3)	keyboard[0x3] = 1;
-	else if(key == SDLK_4)	keyboard[0xC] = 1;
+	switch (key) {
+		case SDLK_ESCAPE:
+			exit(EXIT_SUCCESS);
 
-	else if(key == SDLK_a)	keyboard[0x4] = 1;
-	else if(key == SDLK_z)	keyboard[0x5] = 1;
-	else if(key == SDLK_e)	keyboard[0x6] = 1;
-	else if(key == SDLK_r)	keyboard[0xD] = 1;
+		case SDLK_1:
+			keyboard[0x1] = flag;
+		break;
 
-	else if(key == SDLK_q)	keyboard[0x7] = 1;
-	else if(key == SDLK_s)	keyboard[0x8] = 1;
-	else if(key == SDLK_d)	keyboard[0x9] = 1;
-	else if(key == SDLK_f)	keyboard[0xE] = 1;
+		case SDLK_2:
+			keyboard[0x2] = flag;
+		break;
 
-	else if(key == SDLK_w)	keyboard[0xA] = 1;
-	else if(key == SDLK_x)	keyboard[0x0] = 1;
-	else if(key == SDLK_c)	keyboard[0xB] = 1;
-	else if(key == SDLK_v)	keyboard[0xF] = 1;
+		case SDLK_3:
+			keyboard[0x3] = flag;
+		break;
+
+		case SDLK_4:
+			keyboard[0xC] = flag;
+		break;
+
+		case SDLK_a:
+			keyboard[0x4] = flag;
+		break;
+
+		case SDLK_z:
+			keyboard[0x5] = flag;
+		break;
+
+		case SDLK_e:
+			keyboard[0x6] = flag;
+		break;
+
+		case SDLK_r:
+			keyboard[0xD] = flag;
+		break;
+
+		case SDLK_q:
+			keyboard[0x7] = flag;
+		break;
+
+		case SDLK_s:
+			keyboard[0x8] = flag;
+		break;
+
+		case SDLK_d:
+			keyboard[0x9] = flag;
+		break;
+
+		case SDLK_f:
+			keyboard[0xE] = flag;
+		break;
+
+		case SDLK_w:
+			keyboard[0xA] = flag;
+		break;
+
+		case SDLK_x:
+			keyboard[0x0] = flag;
+		break;
+
+		case SDLK_c:
+			keyboard[0xB] = flag;
+		break;
+
+		case SDLK_v:
+			keyboard[0xF] = flag;
+		break;
+
+		default:
+			;
+	}
 }
 
 void printError(const char *format, ...)
