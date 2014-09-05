@@ -91,7 +91,6 @@ void loadGame(const char *game)
 {
 	initialiseChip();
 
-	fprintf(stdout, "%s\n", game);
 	FILE *file = NULL;
 	file = fopen(game, "rb");
 
@@ -121,18 +120,14 @@ void loadGame(const char *game)
 	}
 }
 
-
 void cycle()
-{ 
+{
 	// Fetch opcode: each opcode being 2 bytes long and the memory storing
 	// one-byte addresses, we need to merge two successive addresses
-
 	opcode = memory[pc] << 8 | memory[pc + 1];
-	//fprintf(stdout, "Executing opcode 0x%X\n", opcode);
-
+	
 	// Decode the opcode according to the opcode table
-
-	switch(opcode & 0xF000) { // Read the first 4 bits
+	switch (opcode & 0xF000) { // Read the first 4 bits		
 		case 0x0000:
 			switch (opcode & 0x000F) {
 				case 0x0000: // 0x00E0: clears the screen
@@ -143,13 +138,13 @@ void cycle()
 					pc += 2;
 				break;
 
-				case 0x000E: // 0x000E: returns from subroutine
+				case 0x000E: // 0x00EE: Returns from subroutine
 					--sp;
 					pc = stack[sp];
 					pc += 2;
 				break;
 
-				default: 
+				default:
 					fprintf(stderr, "Unknown opcode [0x0000]: 0x%X\n", opcode);
 			}
 		break;
@@ -224,7 +219,7 @@ void cycle()
 
 				case 0x0004: // 0x8XY4: adds VY to VX
 					// if (V[X] > (255 - V[Y]))
-					if (V[opcode & 0x00F0] >> 4
+					if (V[(opcode & 0x00F0) >> 4] 
 						> (0xFF - V[(opcode & 0x0F00) >> 8])) {
 						V[0xF] = 1; // set VF to 1 (carry flag)
 					} else {
@@ -263,13 +258,13 @@ void cycle()
 					pc += 2;
 				break;
 
-				case 0x0008: // 0x8XYE: VX <<= 1. VF set to VX's first bit
+				case 0x000E: // 0x8XYE: VX <<= 1. VF set to VX's first bit
 					V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
 					V[(opcode & 0x0F00) >> 8] <<= 1;
 					pc += 2;
 				break;
 
-				default: 
+				default:
 					fprintf(stderr, "Unknown opcode [0x8000]: 0x%X\n", opcode);
 			}
 		break;
@@ -281,7 +276,6 @@ void cycle()
 				pc += 2;
 			}
 		break;
-
 
 		case 0xA000: // 0xANNN: sets I to the address NNN
 			I = opcode & 0x0FFF;
@@ -303,12 +297,11 @@ void cycle()
 		case 0xD000: {
 			ul8 x = V[(opcode & 0x0F00) >> 8];
 			ul8 y = V[(opcode & 0x00F0) >> 4];
-			ul8 height = opcode & 0x000F;
+			ul16 height = opcode & 0x000F;
 			ul8 pixel;
 
 			V[0xF] = 0;
-
-			for (ul8 yline = 0; yline < height; ++yline) {
+			for (ul16 yline = 0; yline < height; ++yline) {
 				// fetch the pixel value from I onwards
 				pixel = memory[I + yline];
 
@@ -324,7 +317,7 @@ void cycle()
 						}
 
 						// XOR the new pixel value
-						screen[x + xline + ((yline + y) * WIDTH)] ^= 1;	
+						screen[x + xline + ((y + yline) * WIDTH)] ^= 1;
 					}
 				}
 			}
@@ -335,8 +328,8 @@ void cycle()
 		break;
 
 		case 0xE000:
-			switch (opcode & 0x000F) {
-				case 0x000E: // 0xEX9E: skip the next instruction if the key in VX is pressed
+			switch (opcode & 0x00FF) {
+				case 0x009E: // 0xEX9E: skip the next instruction if the key in VX is pressed
 					if (kb[V[(opcode & 0x0F00) >> 8]] != 0) {
 						pc += 4;
 					} else {
@@ -344,7 +337,7 @@ void cycle()
 					}
 				break;
 
-				case 0x0001: // 0xEXA1: skip the next instruction if the key in VX ins't pressed
+				case 0x00A1: // 0xEXA1: skip the next instruction if the key in VX ins't pressed
 					if (kb[V[(opcode & 0x0F00) >> 8]] == 0) {
 						pc += 4;
 					} else {
@@ -353,7 +346,7 @@ void cycle()
 				break;
 
 				default:
-					fprintf(stderr, "Unknown opcode [0xE000] 0x%X\n", opcode);
+					fprintf(stderr, "Unknown opcode [0xE000]: 0x%X\n", opcode);
 			}
 		break;
 
@@ -364,13 +357,13 @@ void cycle()
 					pc += 2;
 				break;
 
-				case 0x000A: { // 0xFX0A: keypress is stored in VX
-					ul8 keypress = 0;
+				case 0x000A: { // 0xFX0A: keypress is stored in VX		
+					bool keypress = false;
 
 					for (size_t i = 0; i < 16; ++i) {
 						if (kb[i] != 0) {
-							V[(opcode & 0x0F00) >> 8] = kb[i];
-							keypress = 1;
+							V[(opcode & 0x0F00) >> 8] = i;
+							keypress = true;
 						}
 					}
 
@@ -410,19 +403,19 @@ void cycle()
 
 				// 	0xFX33: store the binary-coded decimal representation 
 				//	of VX at the addresses I, I + 1, and I + 2
-				case 0x0033: 
+				case 0x0033:
 					// hundreds
 					memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
 					// tens
 					memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
 					// digits
-					memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
-					pc =+2;
+					memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;					
+					pc += 2;
 				break;
 
 				case 0x0055: // 0xFX55: store V0 to VX in memory starting at I
-					for (size_t i = 0; i <= (ul8)((opcode & 0x0F00) >> 8); ++i) {
-						memory[I + i] = V[i];
+					for (ul8 i = 0; i <= (ul8)((opcode & 0x0F00) >> 8); ++i) {
+						memory[I + i] = V[i];	
 					}
 
 					I += ((opcode & 0x0F00) >> 8) + 1;
@@ -430,33 +423,31 @@ void cycle()
 				break;
 
 				case 0x0065: // 0xFX65: fill V0 to VX with values from memory starting at I
-					for (size_t i = 0; i <= (ul8)((opcode & 0x0F00) >> 8); ++i) {
-						V[i] = memory[I + i];
+					for (ul8 i = 0; i <= (ul8)((opcode & 0x0F00) >> 8); ++i) {
+						V[i] = memory[I + i];			
 					}
 
 					I += ((opcode & 0x0F00) >> 8) + 1;
 					pc += 2;
 				break;
 
-				default: 
+				default:
 					fprintf(stderr, "Unknown opcode [0xF000]: 0x%X\n", opcode);
 			}
 		break;
 
 		default:
-			fprintf(stderr, "Unknown opcode 0x%X\n", opcode);
-	}
-	
+			fprintf(stderr, "Unknown opcode: 0x%X\n", opcode);
+	}	
+
 	// Update timers
-
-	if (delayTimer > 0) {
+	if(delayTimer > 0)
 		--delayTimer;
-	}
 
-	if (soundTimer > 0) {
-		if (soundTimer == 1) {
-			fprintf(stdout, "BEEP\7\n");
-		}
+	if(soundTimer > 0)
+	{
+		if(soundTimer == 1)
+			fprintf(stdout, "BEEP!\7\n");
 		--soundTimer;
 	}
 }
