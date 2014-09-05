@@ -32,7 +32,7 @@ void initialiseSDL()
 		printError("Failed to create the window: (%s)\n", SDL_GetError());
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED); //| SDL_RENDERER_PRESENTVSYNC
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 	if (renderer == NULL) {
 		printError("Failed to initialise renderer: (%s)\n", SDL_GetError());

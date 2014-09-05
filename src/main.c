@@ -11,9 +11,9 @@
 #include "chip8.h"
 #include "sdl.h"
 
-#define REFRESH_RATE (100/6)	// 60Hz => 1000/60ms
+#define FRAMERATE (100/6)		// 60Hz => 1000/60ms
 
-const int cycle = 10;			// 10 ops per cycle, so 600Hz
+const int ticksperframe = 10;	// 10 ops per frame, so 600Hz
 
 int main(int argc, char **argv)
 {
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	initialiseSDL();
 	SDL_Event event;
 
-	int ops = 0;
+	int ticks = 0;
 	uint_least64_t start = SDL_GetTicks();
 
 	while (1) {
@@ -42,15 +42,16 @@ int main(int argc, char **argv)
 		}
 
 		// Iterate one cycle
-		if (ops < cycle) {
+		if (ticks < ticksperframe) {
 			execute();
-			++ops;
+			++ticks;
 		}
 
-		if ((SDL_GetTicks() - start) >= REFRESH_RATE) {
+		if ((SDL_GetTicks() - start) >= FRAMERATE) {
 			start = SDL_GetTicks();
+			updateTimers();
 			drawGraphics();
-			ops = 0;
+			ticks = 0;
 		}
 	}
 }

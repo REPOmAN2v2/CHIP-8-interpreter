@@ -439,8 +439,9 @@ void execute()
 		default:
 			fprintf(stderr, "Unknown opcode: 0x%X\n", opcode);
 	}	
+}
 
-	// Update timers
+void updateTimers() {
 	if(delayTimer > 0) {
 		--delayTimer;
 	}
