@@ -11,8 +11,6 @@
 #include "chip8.h"
 #include "sdl.h"
 
-static float getTime();
-
 int main(int argc, char **argv)
 {
 	if (argc == 1) {
@@ -47,10 +45,9 @@ int main(int argc, char **argv)
 		}
 
 		const int deltaTime = SDL_GetTicks() - start;
-		fprintf(stdout, "%d\n", deltaTime);
 
-		if (deltaTime < (100/12)) {
-			SDL_Delay((100/12) - deltaTime);
+		if (deltaTime < (100/24)) {
+			SDL_Delay((100/24) - deltaTime);
 		}
 	}
 }

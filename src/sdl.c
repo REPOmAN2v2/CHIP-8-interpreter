@@ -15,11 +15,11 @@ static void printError(const char *format, ...);
 void initialiseSDL()
 {
 	if (SDL_Init(SDL_INIT_EVENTS) != 0) {
-		printError("Failed to initialise SDL (%s)", SDL_GetError());
+		printError("Failed to initialise SDL (%s)\n", SDL_GetError());
 	}
 
 	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
-		printError("Failed to initialise linear texture rendering");
+		printError("Failed to initialise linear texture rendering\n");
 	}
 
 	window = SDL_CreateWindow("CHIP-8", SDL_WINDOWPOS_UNDEFINED,

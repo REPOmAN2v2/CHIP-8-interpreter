@@ -40,6 +40,15 @@ ul8 delayTimer; // both timers count at 60Hz down to zero
 ul8 soundTimer;
 ul8 kb[KEYS]; // keyboard
 
+/* Writing a 7:
+
+	0xF0 1111 ****
+	0x10 0001    *
+	0x20 0010   *
+	0x40 0100  *
+	0x40 0100  *
+*/
+
 ul8 fontset[80] = {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 	0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -58,15 +67,6 @@ ul8 fontset[80] = {
 	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
-
-/* Writing a 7:
-
-	0xF0 1111 ****
-	0x10 0001    *
-	0x20 0010   *
-	0x40 0100  *
-	0x40 0100  *
-*/
 
 /**
  * Local helper functions
@@ -100,42 +100,24 @@ void loadGame(const char *game)
 	} else {
 		fseek(file, 0, SEEK_END);
 		unsigned long fileLen = ftell(file);
-		// fseek(file, 0, SEEK_SET);
-		rewind(file);
+		fseek(file, 0, SEEK_SET);
 
 		if ((MEM - 512) < fileLen) {
-			printError("The program is too big: %u bytes", fileLen);
+			printError("The program is too big: %u bytes\n", fileLen, 
+				__FILE__ ,__LINE__);
 		}
 
-		char *buffer = malloc(sizeof(char) * fileLen);
-		if (buffer == NULL) {
-			printError("Could not allocate file buffer\n");
-		} else {
-			fprintf(stdout, "Allocated %ld bytes of buffer\n", fileLen);
-		}
-
-		size_t result = fread(buffer, 1, fileLen, file);
-		if (result != fileLen) {
-			printError("Reading error: %u\n", result);
-		}
-
-		for (size_t i = 0; i < fileLen; ++i) {
-			memory[i + 512] = buffer[i];
-		}
-
+		size_t result = fread(memory + 512, sizeof(ul8), fileLen, file);
 		fclose(file);
-		free(buffer);
 
-		/*if (fileLen > (MEM - 512)) {
-			printError("The program is using too much memory\n");
-		} else {
-			size_t result = fread(memory + 512, fileLen, 1, file);
-			fclose(file);
-
-			if (result != fileLen) {
-				printError("Reading error\n");
-			}
-		}*/
+		if (result != fileLen) {
+			if (ferror(file)) {
+				perror("fread()");
+				printError("fread() failed\n");
+            } else {
+            	printError("Reading error\n");
+            }
+		}
 	}
 }
 
@@ -439,7 +421,7 @@ void cycle()
 				break;
 
 				case 0x0055: // 0xFX55: store V0 to VX in memory starting at I
-					for (size_t i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+					for (size_t i = 0; i <= (ul8)((opcode & 0x0F00) >> 8); ++i) {
 						memory[I + i] = V[i];
 					}
 
@@ -448,7 +430,7 @@ void cycle()
 				break;
 
 				case 0x0065: // 0xFX65: fill V0 to VX with values from memory starting at I
-					for (size_t i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+					for (size_t i = 0; i <= (ul8)((opcode & 0x0F00) >> 8); ++i) {
 						V[i] = memory[I + i];
 					}
 
@@ -489,7 +471,6 @@ bool getDrawFlag()
 
 int getPixel(int x, int y)
 {
-	//fprintf(stdout, "screen[(y*WIDTH) + x]: %d\n", screen[(y*WIDTH) + x]);
 	return (screen[(y*WIDTH) + x]);
 }
 
