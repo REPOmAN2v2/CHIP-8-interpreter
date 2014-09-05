@@ -11,6 +11,10 @@
 #include "chip8.h"
 #include "sdl.h"
 
+#define REFRESH_RATE (100/6)	// 60Hz => 1000/60ms
+
+const int cycle = 10;			// 10 ops per cycle, so 600Hz
+
 int main(int argc, char **argv)
 {
 	if (argc == 1) {
@@ -24,11 +28,12 @@ int main(int argc, char **argv)
 	initialiseSDL();
 	SDL_Event event;
 
-	while (1) {
-		uint_least64_t start = SDL_GetTicks();
+	int ops = 0;
+	uint_least64_t start = SDL_GetTicks();
 
+	while (1) {
 		// If we press or release a key, store the state
-		if (SDL_PollEvent(&event)) {
+		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_KEYDOWN) {
 				setKeys(event.key.keysym.sym, 1);
 			} else if (event.type == SDL_KEYUP) {
@@ -37,17 +42,15 @@ int main(int argc, char **argv)
 		}
 
 		// Iterate one cycle
-		cycle();
-
-		// Draw the screen if needed
-		if (getDrawFlag()) {
-			drawGraphics();
+		if (ops < cycle) {
+			execute();
+			++ops;
 		}
 
-		const int deltaTime = SDL_GetTicks() - start;
-
-		if (deltaTime < (100/24)) {
-			SDL_Delay((100/24) - deltaTime);
+		if ((SDL_GetTicks() - start) >= REFRESH_RATE) {
+			start = SDL_GetTicks();
+			drawGraphics();
+			ops = 0;
 		}
 	}
 }

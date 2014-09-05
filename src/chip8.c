@@ -120,7 +120,7 @@ void loadGame(const char *game)
 	}
 }
 
-void cycle()
+void execute()
 {
 	// Fetch opcode: each opcode being 2 bytes long and the memory storing
 	// one-byte addresses, we need to merge two successive addresses
@@ -207,12 +207,12 @@ void cycle()
 					pc += 2;
 				break;
 
-				case 0x0002: // 0x8XY1: set VX to "VX AND VY"
+				case 0x0002: // 0x8XY2: set VX to "VX AND VY"
 					V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
 					pc += 2;
 				break;
 
-				case 0x0003: // 0x8XY1: set VX to "VX XOR VY"
+				case 0x0003: // 0x8XY3: set VX to "VX XOR VY"
 					V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
 					pc += 2;
 				break;
@@ -441,13 +441,14 @@ void cycle()
 	}	
 
 	// Update timers
-	if(delayTimer > 0)
+	if(delayTimer > 0) {
 		--delayTimer;
+	}
 
-	if(soundTimer > 0)
-	{
-		if(soundTimer == 1)
-			fprintf(stdout, "BEEP!\7\n");
+	if(soundTimer > 0) {
+		if(soundTimer == 1) {
+			fprintf(stdout, "BEEP!\n");
+		}
 		--soundTimer;
 	}
 }

@@ -7,7 +7,7 @@
 #define HEIGHT 32
 
 void loadGame(const char *game);
-void cycle();
+void execute();
 bool getDrawFlag();
 int getPixel(int x, int y);
 unsigned char * getKeyboard();
