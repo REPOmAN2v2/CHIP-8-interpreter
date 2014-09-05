@@ -11,7 +11,6 @@ void execute();
 void updateTimers();
 
 // Getters 
-bool getDrawFlag();
 int getPixel(int x, int y);
 unsigned char * getKeyboard();
 

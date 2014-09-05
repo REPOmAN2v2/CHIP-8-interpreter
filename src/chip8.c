@@ -23,8 +23,6 @@ typedef uint_least16_t ul16;
  * Global variables
  */
 
-bool drawFlag;
-
 // two bytes
 ul16 opcode;
 ul16 I; // address register
@@ -79,7 +77,6 @@ void initialiseChip()
 	srand(time(NULL));
 
 	pc = 0x200; // the program begins at 0x200, the interpreter comes before that
-	drawFlag = true;
 
 	// load fontset
 	for (size_t i = 0; i < 80; ++i) {
@@ -134,7 +131,6 @@ void execute()
 					for (size_t i = 0; i < (WIDTH * HEIGHT); ++i) {
 						screen[i] = 0x0;
 					}
-					drawFlag = true;
 					pc += 2;
 				break;
 
@@ -322,7 +318,6 @@ void execute()
 				}
 			}
 
-			drawFlag = true;
 			pc += 2;
 		}
 		break;
@@ -452,14 +447,6 @@ void updateTimers() {
 		}
 		--soundTimer;
 	}
-}
-
-bool getDrawFlag()
-{
-	bool old = drawFlag;
-	drawFlag = drawFlag ? false : true;
-
-	return old;
 }
 
 int getPixel(int x, int y)
